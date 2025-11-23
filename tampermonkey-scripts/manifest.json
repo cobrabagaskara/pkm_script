@@ -1,0 +1,21 @@
+{
+    "version": "1.0",
+    "last_updated": "2024-01-01T00:00:00Z",
+    "scripts": [
+        {
+            "name": "Form Auto-Filler",
+            "path": "scripts/form-autofill.user.js",
+            "description": "Automatically fills common forms"
+        },
+        {
+            "name": "Data Extractor",
+            "path": "scripts/data-extractor.user.js", 
+            "description": "Extracts data from tables"
+        },
+        {
+            "name": "UI Enhancer",
+            "path": "scripts/ui-enhancer.user.js",
+            "description": "Improves user interface"
+        }
+    ]
+}
