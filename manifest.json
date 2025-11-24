@@ -1,6 +1,7 @@
 {
   "modules": [
     "example-hello.js",
-    "auto-close-notification.js"
+    "auto-close-notification.js",
+    "auto-close-billing.js"
   ]
 }
