@@ -1,5 +1,5 @@
 {
-    "version": "1.1",
+    "version": "1.2",
     "last_updated": "2024-12-19T10:00:00Z",
     "scripts": [
         {
@@ -20,7 +20,7 @@
         {
             "name": "Auto close billing epus Kedawung",
             "path": "scripts/epus-close-only-epuskesmas-billing-notification.user.js",
-            "description": "Auto klik link dan tombol Kedawung untuk sistem Krisna"
+            "description": "Auto klik close billing notification"
         }
     ]
 }
