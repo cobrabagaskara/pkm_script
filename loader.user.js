@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PKM Scripts Loader
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  Dynamic script loader from GitHub for PKM
 // @author       Cobra
 // @match        *://*/*
@@ -161,10 +161,54 @@
         }
     }
     
-    // Initialize
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => new ScriptManager());
-    } else {
-        new ScriptManager();
+    // =============================================
+    // SOLUSI #2 - ROBUST INITIALIZATION
+    // =============================================
+    function initializeLoader() {
+        const maxWaitTime = 5000; // 5 detik maximum
+        const startTime = Date.now();
+        
+        function tryInitialize() {
+            // Cek jika body sudah ada dan punya content (page meaningful loaded)
+            if (document.body && document.body.children.length > 0) {
+                console.log('🚀 PKM Loader: Page ready, initializing...');
+                new ScriptManager();
+                return true;
+            }
+            
+            // Jika timeout, force initialize anyway
+            if (Date.now() - startTime > maxWaitTime) {
+                console.log('⚠️ PKM Loader: Timeout, forcing initialization...');
+                new ScriptManager();
+                return true;
+            }
+            
+            // Coba lagi dalam 100ms
+            setTimeout(tryInitialize, 100);
+            return false;
+        }
+        
+        tryInitialize();
     }
+    
+    // Handle different page states
+    if (document.readyState === 'loading') {
+        // Page masih loading, tunggu DOMContentLoaded dulu
+        document.addEventListener('DOMContentLoaded', initializeLoader);
+    } else {
+        // DOM sudah ready, langsung initialize dengan safety check
+        initializeLoader();
+    }
+    
+    // Juga handle SPA navigation (untuk website modern)
+    let lastUrl = location.href;
+    new MutationObserver(() => {
+        const url = location.href;
+        if (url !== lastUrl) {
+            lastUrl = url;
+            console.log('🔄 PKM Loader: URL changed (SPA navigation), re-initializing...');
+            setTimeout(initializeLoader, 500);
+        }
+    }).observe(document, { subtree: true, childList: true });
+    
 })();
