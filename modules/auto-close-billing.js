@@ -17,18 +17,14 @@
     }
 
     function closeBillingModal(root) {
-        // Cari modal content
         const modal = root.closest(".modal-content, .modal, .modal-dialog");
         if (!modal) return;
 
-        // Klik tombol close ID spesifik
         const btn = modal.querySelector("#btn_close_suspend");
         if (btn) btn.click();
 
-        // Hapus modal setelah klik
         setTimeout(() => {
             modal.remove();
-            // hapus backdrop khusus modal ini saja
             document.querySelectorAll(".modal-backdrop").forEach(b => b.remove());
         }, 100);
     }
@@ -37,14 +33,10 @@
         for (const m of mutations) {
             for (const node of m.addedNodes) {
                 if (node.nodeType !== 1) continue;
-
-                // jika node mengandung teks notifikasi
                 if (isBillingNotification(node)) {
                     closeBillingModal(node);
                     continue;
                 }
-
-                // jika modal muncul di dalam node
                 const found = node.querySelector?.("*");
                 if (found && isBillingNotification(node)) {
                     closeBillingModal(node);
