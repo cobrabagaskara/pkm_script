@@ -40,3 +40,6 @@ pkm_script/
 ## Catatan
 - Pastikan repo ini diset public
 - Semua script dalam module akan berjalan di seluruh komputer client
+
+## Modul
+- epus-close-billing.js: Otomatis menutup notifikasi tagihan di ePuskesmas.
