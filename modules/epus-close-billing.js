@@ -1,16 +1,14 @@
 // ==UserScript==
 // @name         Epus Close ONLY ePuskesmas Billing Notification (Modul)
 // @namespace    PKM
-// @version      3.2
-// @description  Menutup popup tagihan ePuskesmas secara otomatis
+// @version      3.3
+// @description  Menutup popup tagihan ePuskesmas secara otomatis & persisten
 // ==/UserScript==
 
 (function () {
     'use strict';
 
-    if (!window.location.hostname.endsWith('epuskesmas.id')) {
-        return;
-    }
+    if (!window.location.hostname.endsWith('epuskesmas.id')) return;
 
     const TARGET_KEYWORDS = [
         "Pembayaran Layanan Telah Melewati Jatuh Tempo",
@@ -19,10 +17,10 @@
 
     function getAllTextContent(el) {
         if (!el || el.nodeType !== 1) return '';
-        return (el.textContent || '')
-            + Array.from(el.querySelectorAll('*'))
-                   .map(n => n.textContent || '')
-                   .join(' ');
+        return (el.textContent || '') +
+               Array.from(el.querySelectorAll('*'))
+                    .map(n => n.textContent || '')
+                    .join(' ');
     }
 
     function isBillingNotification(element) {
@@ -31,63 +29,71 @@
     }
 
     function closeBillingModal(root) {
-        const modal = root.closest(".modal-content, .modal, .modal-dialog");
-        if (!modal) return;
+        const modal = root.closest(".modal, .modal-dialog, .modal-content");
+        if (!modal) return false;
 
         const btn = modal.querySelector("#btn_close_suspend");
-        if (btn) {
+        if (btn && !btn.disabled) {
             btn.click();
         }
 
-        // Tetap hapus sebagai fallback
+        // Hapus secara paksa sebagai fallback
         setTimeout(() => {
             if (modal.parentNode) modal.remove();
             document.querySelectorAll(".modal-backdrop").forEach(b => {
                 if (b.parentNode) b.remove();
             });
-        }, 150);
+        }, 100);
+
+        return true;
     }
 
-    // Periksa elemen yang sudah ada saat script dimuat
-    const initialCheck = () => {
-        document.querySelectorAll('body *').forEach(el => {
-            if (isBillingNotification(el)) {
-                closeBillingModal(el);
-            }
-        });
-    };
-
-    // Amati perubahan DOM
+    // === Strategi 1: MutationObserver ===
     const observer = new MutationObserver((mutations) => {
         for (const m of mutations) {
             for (const node of m.addedNodes) {
                 if (node.nodeType !== 1) continue;
-
                 if (isBillingNotification(node)) {
                     closeBillingModal(node);
-                    continue;
                 }
-
-                // Cek juga jika ada anak yang mengandung teks
-                if (node.querySelectorAll) {
-                    node.querySelectorAll('*').forEach(child => {
-                        if (isBillingNotification(child)) {
-                            closeBillingModal(child);
-                        }
-                    });
+                // Cek juga anak-anaknya
+                const walker = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
+                let el;
+                while ((el = walker.nextNode())) {
+                    if (isBillingNotification(el)) {
+                        closeBillingModal(el);
+                    }
                 }
             }
         }
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // Jalankan pemeriksaan awal setelah DOM siap
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initialCheck);
+    if (document.body) {
+        observer.observe(document.body, { childList: true, subtree: true });
     } else {
-        initialCheck();
+        document.addEventListener('DOMContentLoaded', () => {
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
     }
 
-    console.log("[BillingClose Modul] Active → Auto-close tagihan modal on epuskesmas.id.");
+    // === Strategi 2: Polling cadangan (setiap 1.5 detik) ===
+    const pollClose = () => {
+        // Cari semua elemen yang mungkin berisi notifikasi
+        const allElems = document.querySelectorAll('body *');
+        for (const el of allElems) {
+            if (isBillingNotification(el)) {
+                if (closeBillingModal(el)) {
+                    console.log("[BillingClose] Popup ditemukan dan ditutup via polling.");
+                }
+            }
+        }
+    };
+
+    // Jalankan polling setiap 1500 ms
+    setInterval(pollClose, 1500);
+
+    // Jalankan sekali saat mulai
+    setTimeout(pollClose, 500);
+
+    console.log("[BillingClose Modul] Active → Observer + polling aktif di epuskesmas.id.");
 })();
