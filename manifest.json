@@ -11,10 +11,15 @@
             "name": "Form Auto-Filler2", 
             "path": "scripts/autofill_form2.user.js",
             "description": "Automatically fills common forms"
-        }
+        },
         {
             "name": "Krisna Auto Kedawung",
             "path": "scripts/krisna-auto-kedawung.user.js",
+            "description": "Auto klik link dan tombol Kedawung untuk sistem Krisna"
+        },
+        {
+            "name": "Auto close billing epus Kedawung",
+            "path": "scripts/epus-close-only-epuskesmas-billing-notification.user.js",
             "description": "Auto klik link dan tombol Kedawung untuk sistem Krisna"
         }
     ]
