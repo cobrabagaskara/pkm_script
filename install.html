@@ -1,0 +1,87 @@
+<!-- dashboard.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PKM Script Manager</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .card {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #007bff;
+    }
+    .btn {
+      display: inline-block;
+      background: #28a745;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background: #218838;
+    }
+    code {
+      background: #eee;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <h1>PKM Script Manager</h1>
+
+  <div class="card">
+    <h2>📥 Install PKM Loader</h2>
+    <p>Klik tombol di bawah untuk menginstal loader otomatis ke Tampermonkey.</p>
+    <p><strong>Pastikan ekstensi Tampermonkey sudah terpasang!</strong></p>
+    <a href="https://raw.githubusercontent.com/cobrabagaskara/pkm_script/main/loader.user.js" class="btn" target="_blank">
+      Install PKM Loader
+    </a>
+    <p style="font-size: 0.9em; color: #666; margin-top: 8px;">
+      Link ini mengarah ke file mentah (<i>raw</i>) di GitHub. Tampermonkey akan otomatis mendeteksi dan menawarkan instalasi.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>📦 Daftar Modul Tersedia</h2>
+    <div id="modules">Memuat daftar modul...</div>
+    <p style="margin-top: 12px;">
+      <a href="https://github.com/cobrabagaskara/pkm_script/edit/main/manifest.json" target="_blank">
+        Edit manifest.json untuk mengaktifkan/menonaktifkan modul
+      </a>
+    </p>
+  </div>
+
+  <script>
+    fetch('https://api.github.com/repos/cobrabagaskara/pkm_script/contents/modules')
+      .then(r => r.json())
+      .then(files => {
+        const container = document.getElementById('modules');
+        if (!Array.isArray(files)) {
+          container.innerHTML = '<p style="color:red;">Gagal memuat modul.</p>';
+          return;
+        }
+        const jsFiles = files.filter(f => f.name.endsWith('.js')).map(f => f.name);
+        if (jsFiles.length === 0) {
+          container.innerHTML = '<p>Tidak ada modul tersedia.</p>';
+        } else {
+          container.innerHTML = jsFiles.map(name => `<div><code>${name}</code></div>`).join('');
+        }
+      })
+      .catch(err => {
+        document.getElementById('modules').innerHTML = '<p style="color:red;">Error: ' + err.message + '</p>';
+      });
+  </script>
+</body>
+</html>
