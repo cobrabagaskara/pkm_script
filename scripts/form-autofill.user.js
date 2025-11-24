@@ -4,7 +4,7 @@
 // @version      1.1
 // @description  Automatically fills common forms
 // @author       Cobra
-// @match        https://example.com/*
+// @match        https://www.google.com/
 // @match        http://localhost/*
 // @grant        none
 // ==/UserScript==
