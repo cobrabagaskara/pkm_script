@@ -1,26 +1,26 @@
 // ==UserScript==
-// @name         Company Scripts Loader
-// @namespace    http://yourcompany.com
-// @version      1.0
-// @description  Dynamic script loader from GitHub
-// @author       You
+// @name         PKM Scripts Loader
+// @namespace    http://tampermonkey.net/
+// @version      1.2
+// @description  Dynamic script loader from GitHub for PKM
+// @author       Cobra
 // @match        *://*/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
 // @connect      raw.githubusercontent.com
-// @updateURL    https://raw.githubusercontent.com/yourusername/tampermonkey-scripts/main/loader.user.js
-// @downloadURL  https://raw.githubusercontent.com/yourusername/tampermonkey-scripts/main/loader.user.js
+// @updateURL    https://raw.githubusercontent.com/cobrabagaskara/pkm_script/main/loader.user.js
+// @downloadURL  https://raw.githubusercontent.com/cobrabagaskara/pkm_script/main/loader.user.js
 // ==/UserScript==
 
 (function() {
     'use strict';
     
     const CONFIG = {
-        repoUrl: 'https://raw.githubusercontent.com/yourusername/tampermonkey-scripts/main/',
+        repoUrl: 'https://raw.githubusercontent.com/cobrabagaskara/pkm_script/main/',
         manifestFile: 'manifest.json',
-        checkInterval: 60 * 60 * 1000, // 1 jam
+        checkInterval: 30 * 60 * 1000, // 30 menit
         forceUpdate: false
     };
     
@@ -31,6 +31,7 @@
         }
         
         async init() {
+            console.log('🚀 PKM Loader: Initializing...');
             this.addMenuCommands();
             await this.loadManifest();
             await this.checkUpdates();
@@ -38,63 +39,85 @@
         }
         
         addMenuCommands() {
-            GM_registerMenuCommand('🔄 Check Updates', () => this.forceCheckUpdates());
-            GM_registerMenuCommand('📊 Show Loaded Scripts', () => this.showLoadedScripts());
+            if (typeof GM_registerMenuCommand !== 'undefined') {
+                GM_registerMenuCommand('🔄 Check PKM Updates', () => this.forceCheckUpdates());
+                GM_registerMenuCommand('📊 Show PKM Scripts', () => this.showLoadedScripts());
+            }
         }
         
         async loadManifest() {
             try {
                 const manifest = await this.fetchFile(CONFIG.manifestFile);
-                this.scripts = JSON.parse(manifest).scripts;
-                console.log('📦 Loaded manifest:', this.scripts);
+                const data = JSON.parse(manifest);
+                this.scripts = data.scripts;
+                console.log('📦 PKM Loader: Loaded manifest with', this.scripts.length, 'scripts');
             } catch (error) {
-                console.error('❌ Failed to load manifest:', error);
+                console.error('❌ PKM Loader: Failed to load manifest:', error);
             }
         }
         
         async checkUpdates() {
+            console.log('🔍 PKM Loader: Checking for updates...');
             for (const scriptInfo of this.scripts) {
                 await this.processScript(scriptInfo);
             }
         }
         
         async processScript(scriptInfo) {
-            const storedVersion = GM_getValue(`version_${scriptInfo.name}`, '0');
-            const scriptContent = await this.fetchFile(scriptInfo.path);
-            
-            // Extract version from script metadata
-            const versionMatch = scriptContent.match(/@version\s+([\d.]+)/);
-            const currentVersion = versionMatch ? versionMatch[1] : '1.0';
-            
-            if (currentVersion !== storedVersion || CONFIG.forceUpdate) {
-                console.log(`🔄 Updating ${scriptInfo.name} to v${currentVersion}`);
-                await this.executeScript(scriptContent, scriptInfo.name);
-                GM_setValue(`version_${scriptInfo.name}`, currentVersion);
+            try {
+                const storedVersion = GM_getValue(`pkm_version_${scriptInfo.name}`, '0');
+                const scriptContent = await this.fetchFile(scriptInfo.path);
+                
+                // Extract version from script metadata
+                const versionMatch = scriptContent.match(/@version\s+([\d.]+)/);
+                const currentVersion = versionMatch ? versionMatch[1] : '1.0';
+                
+                if (currentVersion !== storedVersion || CONFIG.forceUpdate) {
+                    console.log(`🔄 PKM Loader: Updating ${scriptInfo.name} from v${storedVersion} to v${currentVersion}`);
+                    await this.executeScript(scriptContent, scriptInfo.name);
+                    GM_setValue(`pkm_version_${scriptInfo.name}`, currentVersion);
+                } else {
+                    console.log(`✅ PKM Loader: ${scriptInfo.name} is up to date (v${currentVersion})`);
+                }
+            } catch (error) {
+                console.error(`❌ PKM Loader: Failed to process ${scriptInfo.name}:`, error);
             }
         }
         
         async executeScript(content, scriptName) {
-            try {
-                // Remove metadata to prevent conflicts
-                const cleanContent = content.replace(/\/\/ ==\/UserScript==[\s\S]*?/, '');
-                
-                // Create script element
-                const script = document.createElement('script');
-                script.textContent = `
-                    try {
-                        ${cleanContent}
-                        console.log('✅ Successfully loaded: ${scriptName}');
-                    } catch (error) {
-                        console.error('❌ Error in ${scriptName}:', error);
-                    }
-                `;
-                
-                document.head.appendChild(script);
-                document.head.removeChild(script);
-                
-            } catch (error) {
-                console.error(`❌ Failed to execute ${scriptName}:`, error);
-            }
+            return new Promise((resolve) => {
+                try {
+                    // Split to get content after metadata
+                    const parts = content.split('// ==/UserScript==');
+                    const scriptContent = parts.length > 1 ? parts[1] : content;
+                    
+                    // Create script element
+                    const script = document.createElement('script');
+                    script.textContent = `
+                        (function() {
+                            'use strict';
+                            try {
+                                ${scriptContent}
+                                console.log('✅ PKM: Successfully loaded "${scriptName}"');
+                            } catch (error) {
+                                console.error('❌ PKM: Error in "${scriptName}":', error);
+                            }
+                        })();
+                    `;
+                    
+                    document.head.appendChild(script);
+                    setTimeout(() => {
+                        if (script.parentNode) {
+                            document.head.removeChild(script);
+                        }
+                        resolve();
+                    }, 100);
+                    
+                } catch (error) {
+                    console.error(`❌ PKM Loader: Failed to execute ${scriptName}:`, error);
+                    resolve();
+                }
+            });
         }
         
         fetchFile(filename) {
@@ -102,11 +125,12 @@
                 GM_xmlhttpRequest({
                     method: 'GET',
                     url: CONFIG.repoUrl + filename,
+                    timeout: 10000,
                     onload: function(response) {
                         if (response.status === 200) {
                             resolve(response.responseText);
                         } else {
-                            reject(new Error(`HTTP ${response.status}`));
+                            reject(new Error(`HTTP ${response.status} for ${filename}`));
                         }
                     },
                     onerror: reject
@@ -124,18 +148,23 @@
             CONFIG.forceUpdate = true;
             await this.checkUpdates();
             CONFIG.forceUpdate = false;
-            alert('✅ Update check completed!');
+            alert('✅ PKM Loader: Update check completed!');
         }
         
         showLoadedScripts() {
-            const scriptList = this.scripts.map(s => 
-                `• ${s.name} (v${GM_getValue(`version_${s.name}`, 'unknown')})`
-            ).join('\\n');
+            const scriptList = this.scripts.map(s => {
+                const version = GM_getValue(`pkm_version_${s.name}`, 'Not loaded');
+                return `• ${s.name} (v${version}) - ${s.description}`;
+            }).join('\n');
             
-            alert(`📊 Loaded Scripts:\\n${scriptList}`);
+            alert(`📊 PKM Loaded Scripts:\n${scriptList}`);
         }
     }
     
     // Initialize
-    new ScriptManager();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => new ScriptManager());
+    } else {
+        new ScriptManager();
+    }
 })();
