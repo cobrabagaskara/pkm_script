@@ -7,6 +7,9 @@
         "e-Puskesmas Pemberitahuan"
     ];
 
+    // Hanya jalankan di halaman URL yang mengandung "broadcastNotif"
+    if (!window.location.href.includes("broadcastNotif")) return;
+
     function isBillingNotification(element) {
         if (!element) return false;
 
@@ -20,7 +23,8 @@
         const modal = root.closest(".modal-content, .modal, .modal-dialog");
         if (!modal) return;
 
-        const btn = modal.querySelector("#btn_close_suspend");
+        // tombol close fleksibel
+        const btn = modal.querySelector("#btn_close_suspend, .btn-close, [data-dismiss='modal']");
         if (btn) btn.click();
 
         setTimeout(() => {
@@ -33,10 +37,12 @@
         for (const m of mutations) {
             for (const node of m.addedNodes) {
                 if (node.nodeType !== 1) continue;
+
                 if (isBillingNotification(node)) {
                     closeBillingModal(node);
                     continue;
                 }
+
                 const found = node.querySelector?.("*");
                 if (found && isBillingNotification(node)) {
                     closeBillingModal(node);
@@ -49,6 +55,23 @@
         childList: true,
         subtree: true
     });
+
+    // Fallback interval untuk modal yang muncul terlambat
+    setInterval(() => {
+        document.querySelectorAll(".modal-content, .modal, .modal-dialog").forEach(modal => {
+            if (modal.dataset.billingHandled) return;
+
+            const txt = modal.textContent?.toLowerCase() || "";
+            if (TARGET_KEYWORDS.some(k => txt.includes(k.toLowerCase()))) {
+                const btn = modal.querySelector("#btn_close_suspend, .btn-close, [data-dismiss='modal']");
+                if (btn) btn.click();
+                modal.remove();
+                document.querySelectorAll(".modal-backdrop").forEach(b => b.remove());
+                modal.dataset.billingHandled = true;
+                console.log("[BillingClose] Modal removed by interval fallback");
+            }
+        });
+    }, 1000);
 
     console.log("[BillingClose] Module loaded → Only closing tagihan modal.");
 })();
