@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Epus Close ONLY ePuskesmas Billing Notification
 // @namespace    http://tampermonkey.net/
-// @version      3.0
+// @version      3.1
 // @description  Menutup popup tagihan ePuskesmas tanpa mengganggu menu lain
 // @match        https://cirebon.epuskesmas.id/*
 // @match        https://*.epuskesmas.id/*

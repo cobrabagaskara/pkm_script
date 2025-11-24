@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Krisna Auto Klik  Kedawung
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  Otomatis klik dua link rutin lalu munculkan tombol Kedawung
 // @match        https://cirebonkab.krisna.systems/nonfisik/2026/nonfisik-usulan
 // @grant        none

@@ -2,16 +2,7 @@
     "version": "1.2",
     "last_updated": "2024-12-19T10:00:00Z",
     "scripts": [
-        {
-            "name": "Form Auto-Filler",
-            "path": "scripts/autofill_form.user.js",
-            "description": "Automatically fills common forms"
-        },
-        {
-            "name": "Form Auto-Filler2", 
-            "path": "scripts/autofill_form2.user.js",
-            "description": "Automatically fills common forms"
-        },
+        
         {
             "name": "Krisna Auto Kedawung",
             "path": "scripts/krisna-auto-kedawung.user.js",
