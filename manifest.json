@@ -1,6 +1,6 @@
 {
   "modules": [
-    "example-hello.js"
-   
+    "example-hello.js",
+    "epus-close-billing.js"
   ]
 }
