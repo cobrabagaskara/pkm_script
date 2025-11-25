@@ -1,45 +1,35 @@
-# PKM Centralized Userscript Manager
+# 🧩 PKM Script System
 
-Repository ini digunakan sebagai pusat distribusi script Tampermonkey
-untuk seluruh komputer kantor.
+Sistem distribusi terpusat untuk script Tampermonkey di lingkungan kantor.  
+Cukup install **satu script**, semua fitur otomatis ter-update dari repositori ini.
 
-## Cara Kerja
-Semua komputer hanya perlu menginstall 1 script:
+> ✨ **"Ubah sekali di GitHub, berlaku di semua komputer."**
 
-- `loader.user.js`
+---
 
-Loader tersebut akan:
+## 🚀 Cara Kerja
 
-- Mengambil `manifest.json`
-- Membaca daftar module
-- Mengambil semua script dari folder `/modules`
-- Menjalankannya otomatis
+1. Setiap komputer kantor menginstal [`loader.user.js`](loader.user.js).
+2. Loader mengambil [`manifest.json`](manifest.json) dari repositori ini.
+3. Loader membaca daftar modul, lalu mengunduh dan menjalankan semua file di folder [`/modules`](modules/).
+4. Setiap kali Anda **menambah/mengubah file** dan **push ke GitHub**, semua komputer otomatis mendapat update **tanpa instalasi ulang**.
 
-Setiap perubahan file di repo ini langsung diterapkan ke semua komputer
-**tanpa perlu install ulang**.
+---
 
-## Struktur
+## 🔧 Cara Menambah Modul Baru
 
-```
-pkm_script/
-│
-├── manifest.json
-├── loader.user.js
-└── modules/
-      ├── example-hello.js
-      └── auto-close-notification.js
-```
+1. Buat file JavaScript di folder [`modules/`](modules/), contoh: `auto-fill-form.js`.
+2. Tambahkan nama filenya ke [`manifest.json`](manifest.json):
+   ```json
+   {
+     "modules": [
+       "example-hello.js",
+       "auto-close-notification.js",
+       "auto-fill-form.js"
+     ]
+   }
 
-## Menambah Script Baru
+🖥️ Instalasi untuk Pengguna Baru 
 
-1. Upload script ke folder `/modules`
-2. Tambahkan nama file tersebut ke `manifest.json`
-3. Commit & push
-4. Semua komputer otomatis ikut update
-
-## Catatan
-- Pastikan repo ini diset public
-- Semua script dalam module akan berjalan di seluruh komputer client
-
-## Modul
-- epus-close-billing.js: Otomatis menutup notifikasi tagihan di ePuskesmas.
+Buka di browser:
+👉 https://cobrabagaskara.github.io/pkm_script/install.html  
