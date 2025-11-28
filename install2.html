@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PKM Script - Instalasi (DEV)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
+    .card { background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    .warning { background: #fff8e1; border-left: 4px solid #ffc107; padding: 12px; }
+    a.install { 
+      display: inline-block;
+      background: #4CAF50;
+      color: white;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    a.install:hover { background: #388E3C; }
+    code { background: #eee; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>📥 PKM Script - Versi Pengembangan</h1>
+  
+  <div class="warning">
+    ⚠️ Ini adalah versi <strong>DEV</strong> dari branch <code>dev/modular-system</code>.  
+    JANGAN gunakan di produksi jika tidak diminta jadi tester!
+  </div>
+
+  <div class="card">
+    <h2>Prasyarat</h2>
+    <ul>
+      <li>Ekstensi <a href="https://www.tampermonkey.net/" target="_blank">Tampermonkey</a> sudah terpasang di browser.</li>
+      <li>Browser: Chrome, Edge, atau Firefox.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Instalasi Otomatis</h2>
+    <p>Klik tombol di bawah untuk langsung menginstal loader versi DEV:</p>
+    <a class="install" href="https://raw.githubusercontent.com/cobrabagaskara/pkm_script/dev/modular-system/loader.user.js" target="_blank">
+      ➕ Instal PKM Script (DEV)
+    </a>
+    <p><small>(Link mengarah ke file <code>loader.user.js</code> di branch <code>dev/modular-system</code>)</small></p>
+  </div>
+
+  <div class="card">
+    <h2>Cara Uji</h2>
+    <ol>
+      <li>Buka halaman target (misal: <code>https://epus.pkm.kemkes.go.id/</code>)</li>
+      <li>Buka <strong>DevTools</strong> (<code>F12</code>) → tab <strong>Console</strong></li>
+      <li>Cari log: <code>[PKB Loader DEV]</code></li>
+      <li>Jika modul jalan, akan muncul pesan ✅</li>
+    </ol>
+  </div>
+
+  <footer style="margin-top: 40px; color: #666; font-size: 0.9em;">
+    © 2025 PKM Script — Dikembangkan oleh Ang (cobrabagaskara)
+  </footer>
+</body>
+</html>
