@@ -1,64 +1,89 @@
+<!-- dashboard.html -->
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PKM Script - Instalasi (DEV)</title>
+  <title>PKM Script Manager</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
-    .card { background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; }
-    .warning { background: #fff8e1; border-left: 4px solid #ffc107; padding: 12px; }
-    a.install { 
-      display: inline-block;
-      background: #4CAF50;
-      color: white;
-      padding: 12px 24px;
-      text-decoration: none;
-      border-radius: 6px;
-      font-weight: bold;
-      margin: 10px 0;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
     }
-    a.install:hover { background: #388E3C; }
-    code { background: #eee; padding: 2px 6px; border-radius: 4px; }
+    .card {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #007bff;
+    }
+    .btn {
+      display: inline-block;
+      background: #28a745;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background: #218838;
+    }
+    code {
+      background: #eee;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
   </style>
 </head>
 <body>
-  <h1>📥 PKM Script - Versi Pengembangan</h1>
-  
-  <div class="warning">
-    ⚠️ Ini adalah versi <strong>DEV</strong> dari branch <code>dev/modular-system</code>.  
-    JANGAN gunakan di produksi jika tidak diminta jadi tester!
-  </div>
+  <h1>JAMU Manager</h1>
 
   <div class="card">
-    <h2>Prasyarat</h2>
-    <ul>
-      <li>Ekstensi <a href="https://www.tampermonkey.net/" target="_blank">Tampermonkey</a> sudah terpasang di browser.</li>
-      <li>Browser: Chrome, Edge, atau Firefox.</li>
-    </ul>
-  </div>
-
-  <div class="card">
-    <h2>Instalasi Otomatis</h2>
-    <p>Klik tombol di bawah untuk langsung menginstal loader versi DEV:</p>
-    <a class="install" href="https://raw.githubusercontent.com/cobrabagaskara/pkm_script/dev/modular-system/loader.user.js" target="_blank">
-      ➕ Instal PKM Script (DEV)
+    <h2>📥 Install JAMU Loader</h2>
+    <p>Klik tombol di bawah untuk menginstal Jamu loader.</p>
+    <p><strong>Pastikan ekstensi Tampermonkey sudah terpasang!</strong></p>
+    <a href="https://raw.githubusercontent.com/cobrabagaskara/pkm_script/main/loader.user.js" class="btn" target="_blank">
+      Install JAMU Loader
     </a>
-    <p><small>(Link mengarah ke file <code>loader.user.js</code> di branch <code>dev/modular-system</code>)</small></p>
+   
   </div>
 
   <div class="card">
-    <h2>Cara Uji</h2>
-    <ol>
-      <li>Buka halaman target (misal: <code>https://epus.pkm.kemkes.go.id/</code>)</li>
-      <li>Buka <strong>DevTools</strong> (<code>F12</code>) → tab <strong>Console</strong></li>
-      <li>Cari log: <code>[PKB Loader DEV]</code></li>
-      <li>Jika modul jalan, akan muncul pesan ✅</li>
-    </ol>
+    <h2>📦 Daftar JAMU Tersedia</h2>
+    <div id="modules">Memuat daftar modul...</div>
+    <p style="margin-top: 12px;">
+      <a href="" target="_blank">
+        Edit  modul
+      </a>
+    </p>
   </div>
+  <img src="https://quickchart.io/qr?text=https%3A%2F%2Fraw.githubusercontent.com%2Fcobrabagaskara%2Fpkm_script%2Fmain%2Floader.user.js&size=250" 
+     alt="Install PKM Loader via QR" 
+     style="margin-top: 10px;">
+<p style="font-size: 0.85em;">Pindai dengan HP, lalu buka di browser desktop (jika perlu)</p>
 
-  <footer style="margin-top: 40px; color: #666; font-size: 0.9em;">
-    © 2025 PKM Script — Dikembangkan oleh Ang (cobrabagaskara)
-  </footer>
+  <script>
+    fetch('https://api.github.com/repos/cobrabagaskara/pkm_script/contents/modules')
+      .then(r => r.json())
+      .then(files => {
+        const container = document.getElementById('modules');
+        if (!Array.isArray(files)) {
+          container.innerHTML = '<p style="color:red;">Gagal memuat modul.</p>';
+          return;
+        }
+        const jsFiles = files.filter(f => f.name.endsWith('.js')).map(f => f.name);
+        if (jsFiles.length === 0) {
+          container.innerHTML = '<p>Tidak ada modul tersedia.</p>';
+        } else {
+          container.innerHTML = jsFiles.map(name => `<div><code>${name}</code></div>`).join('');
+        }
+      })
+      .catch(err => {
+        document.getElementById('modules').innerHTML = '<p style="color:red;">Error: ' + err.message + '</p>';
+      });
+  </script>
 </body>
 </html>
