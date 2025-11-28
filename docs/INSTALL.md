@@ -17,4 +17,4 @@
 2. Tampermonkey akan otomatis menawarkan instalasi.
 3. Klik **Install**.
 
-> 💡 Tidak perlu lakukan apa-apa lagi. Semua update otomatis!
+> 💡 Tidak perlu lakukan apa-apa lagi. Semua update otomatis! okeh
