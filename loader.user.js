@@ -8,6 +8,7 @@
 // @match        https://*.epuskesmas.id/*
 // @match        https://layanan.bpjs-kesehatan.go.id/*
 // @match        https://satusehat.kemkes.go.id/*
+// @match        https://pcarejkn.bpjs-kesehatan.go.id/eclaim/iCare
 // @match        https://*.domain-aplikasi-4.go.id/*   // ← sesuaikan
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.7.1.min.js

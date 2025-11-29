@@ -18,16 +18,15 @@
   }
 
   waitForjQuery(() => {
-    // === Filter URL: izinkan query string ===
-    const currentUrl = window.location.href;
-    const allowedPatterns = [
-      /^https:\/\/pcarejkn\.bpjs-kesehatan\.go\.id\/eclaim\/iCare(\?.*)?$/,
-      /^https:\/\/mobile-faskes\.bpjs-kesehatan\.go\.id\/IHS\/historyfaskes(\?.*)?$/
-    ];
+    // === Filter URL===
+    const allowedHosts = [
+  'pcarejkn.bpjs-kesehatan.go.id',
+  'mobile-faskes.bpjs-kesehatan.go.id'
+];
 
-    const isAllowed = allowedPatterns.some(pattern => pattern.test(currentUrl));
-    if (!isAllowed) return;
-
+if (!allowedHosts.includes(window.location.hostname)) {
+  return;
+}
     const isInIframe = window.self !== window.top;
 
     if (isInIframe) {
