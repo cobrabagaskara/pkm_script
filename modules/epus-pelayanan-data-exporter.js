@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         EPUS: Gabung Data Tabel
 // @namespace    PKM
-// @version      1.0
+// @version      1.1
 // @description  Gabungkan semua data tabel (support range halaman, auto set 100/page, auto download Excel)
 // ==/UserScript==
 
@@ -13,9 +13,10 @@
     return;
   }
 
-  // === Pastikan XLSX tersedia (disediakan oleh loader) ===
-  if (typeof XLSX !== 'object') {
-    console.warn('[EPUS Data Exporter] Library XLSX tidak tersedia. Pastikan loader menyediakannya.');
+  // === Pastikan XLSX dari loader tersedia ===
+  const PKM_XLSX = window.PKM?.XLSX;
+  if (!PKM_XLSX) {
+    console.warn('[EPUS Data Exporter] XLSX dari loader tidak tersedia.');
     return;
   }
 
@@ -143,11 +144,12 @@
 
   function downloadXLSX() {
     if (!allData.length) return alert("❌ Belum ada data. Klik 'Gabungkan' dulu.");
+
     const wsData = [headers, ...allData];
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Data");
-    XLSX.writeFile(wb, "data_ckg.xlsx");
+    const ws = PKM_XLSX.utils.aoa_to_sheet(wsData);
+    const wb = PKM_XLSX.utils.book_new();
+    PKM_XLSX.utils.book_append_sheet(wb, ws, "Data");
+    PKM_XLSX.writeFile(wb, "data_ckg.xlsx");
   }
 
   function addButtons() {
