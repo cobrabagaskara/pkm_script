@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         PKM Modular Loader
 // @namespace    PKM
-// @version      1.1.2
-// @description  Loader modular untuk script Tampermonkey berbasis GitHub — dengan notifikasi update otomatis.
-// @author       Ang
+// @version      1.1.3
+// @description  Loader modular untuk script PKM — dengan notifikasi update otomatis.
+// @author       Aang
 // @match        https://cirebon.epuskesmas.id/*
 // @match        https://*.epuskesmas.id/*
 // @match        https://pcarejkn.bpjs-kesehatan.go.id/*
