@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         PKM Modular Loader
 // @namespace    PKM
-// @version      1.1.0
+// @version      1.1.1
 // @description  Loader modular untuk script Tampermonkey berbasis GitHub — dikembangkan di branch terpisah.
 // @author       Aang
+// @match        https://cirebon.epuskesmas.id/*
 // @match        https://*.epuskesmas.id/*
 // @match        https://pcarejkn.bpjs-kesehatan.go.id/*
 // @match        https://mobile-faskes.bpjs-kesehatan.go.id/*
@@ -17,6 +18,10 @@
 
 (function () {
   'use strict';
+
+  // ⚙️ Simpan XLSX dari loader SEBELUM halaman menimpa-nya
+  window.PKM = window.PKM || {};
+  window.PKM.XLSX = XLSX; // ← Ini adalah xlsx.full.min.js
 
   // ⚙️ === KONFIGURASI UTAMA ===
   const CONFIG = {
