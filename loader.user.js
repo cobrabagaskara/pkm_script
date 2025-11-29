@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         PKM Modular Loader
+// @name         PKM Modular Loader (DEV)
 // @namespace    PKM
 // @version      1.0.0
 // @description  Loader modular untuk script Tampermonkey berbasis GitHub — dikembangkan di branch terpisah.
