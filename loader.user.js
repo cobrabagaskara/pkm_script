@@ -1,17 +1,15 @@
 // ==UserScript==
-// @name         PKM Modular Loader (DEV)
+// @name         PKM Modular Loader
 // @namespace    PKM
-// @version      1.0.0
+// @version      1.1.0
 // @description  Loader modular untuk script Tampermonkey berbasis GitHub — dikembangkan di branch terpisah.
-// @author       Ang
-// @match        https://cirebon.epuskesmas.id/*
+// @author       Aang
 // @match        https://*.epuskesmas.id/*
-// @match        https://layanan.bpjs-kesehatan.go.id/*
+// @match        https://pcarejkn.bpjs-kesehatan.go.id/*
+// @match        https://mobile-faskes.bpjs-kesehatan.go.id/*
 // @match        https://satusehat.kemkes.go.id/*
-// @match        https://pcarejkn.bpjs-kesehatan.go.id/eclaim/iCare
-// @match        https://*.domain-aplikasi-4.go.id/*   // ← sesuaikan
+// @match        https://*.domain-aplikasi-4.go.id/*   // ← sesuaikan jika perlu
 // @grant        none
-// @require      https://code.jquery.com/jquery-3.7.1.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js
 // @run-at       document-idle
 // @connect      raw.githubusercontent.com
@@ -22,19 +20,15 @@
 
   // ⚙️ === KONFIGURASI UTAMA ===
   const CONFIG = {
-    GITHUB_USER: 'cobrabagaskara',       // ← GANTI dengan username GitHub kamu
-    REPO_NAME: 'pkm_script',           // ← GANTI jika beda nama repo
-    BRANCH: 'dev/modular-system',      // ← SESUAIKAN: branch pengembangan (bukan 'main'!)
-    MANIFEST_PATH: 'manifest.json'     // lokasi relatif dari root repo
+    GITHUB_USER: 'cobrabagaskara',
+    REPO_NAME: 'pkm_script',
+    BRANCH: 'dev/modular-system',      // ← ganti ke 'main' saat produksi
+    MANIFEST_PATH: 'manifest.json'
   };
-
-  // ────────────────────────────────
-  // JANGAN UBAH DI BAWAH INI
-  // ────────────────────────────────
 
   const MANIFEST_URL = `https://raw.githubusercontent.com/${CONFIG.GITHUB_USER}/${CONFIG.REPO_NAME}/${CONFIG.BRANCH}/${CONFIG.MANIFEST_PATH}`;
 
-  // Log hanya untuk debugging — aman di non-production
+  // Log hanya di branch dev
   function log(...args) {
     if (CONFIG.BRANCH !== 'main') {
       console.log(`[PKM Loader @${CONFIG.BRANCH}]`, ...args);
@@ -46,12 +40,11 @@
       const res = await fetch(url);
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
       const code = await res.text();
-
-      // Eksekusi modul dalam lingkungan terisolasi
+      // Eksekusi modul dalam konteks terisolasi
       new Function('window', 'document', 'console', code)(window, document, console);
       log('✅ Modul aktif:', url);
     } catch (err) {
-      console.error(`[PKM Loader] Gagal muat modul: ${url}`, err);
+      console.error('[PKM Loader] Gagal muat modul:', url, err);
     }
   }
 
