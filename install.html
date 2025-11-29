@@ -1,93 +1,121 @@
-<!-- dashboard.html -->
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>PKM Script Manager</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📦 PKM Script Installer</title>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      line-height: 1.6;
-    }
-    .card {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .header {
+      background: #4361ee;
+      color: white;
+      padding: 24px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .content {
+      padding: 24px;
+    }
+    .info {
+      background: #e7f1ff;
       padding: 16px;
       border-radius: 8px;
-      margin-bottom: 20px;
-      border-left: 4px solid #007bff;
+      margin-bottom: 24px;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
     .btn {
-      display: inline-block;
+      display: block;
+      width: 100%;
+      padding: 14px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .btn-prod {
       background: #28a745;
       color: white;
-      text-decoration: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      font-weight: bold;
-      margin-top: 10px;
+    }
+    .btn-dev {
+      background: #ffc107;
+      color: #212529;
     }
     .btn:hover {
-      background: #218838;
+      opacity: 0.9;
     }
-    code {
-      background: #eee;
-      padding: 2px 6px;
-      border-radius: 3px;
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #6c757d;
     }
   </style>
 </head>
 <body>
-  <h1>JAMU Manager</h1>
+  <div class="container">
+    <div class="header">
+      <h1>JAMU Loader Installer</h1>
+    </div>
+    <div class="content">
+      <div class="info">
+        <strong>🚀 Otomatisasi Pelayanan PKM</strong><br>
+        Cukup install <em>satu kali</em>, semua pegel dan kesel akan otomatis hilang.
+      </div>
 
-  <div class="card">
-    <h2>📥 Install JAMU Loader</h2>
-    <p>Klik tombol di bawah untuk menginstal Jamu loader.</p>
-    <p><strong>Pastikan ekstensi Tampermonkey sudah terpasang!</strong></p>
-    <!-- <a href="https://raw.githubusercontent.com/cobrabagaskara/pkm_script/main/loader.user.js" class="btn" target="_blank">
-      Install JAMU Loader
-    </a> -->
-    <!-- Brach -->
-     <a href="https://raw.githubusercontent.com/cobrabagaskara/pkm_script/dev/modular-system/loader.user.js" class="btn" target="_blank">
-      Install JAMU Loader
-    </a>
-   
+      <div class="btn-group">
+        <a
+          href="https://raw.githubusercontent.com/cobrabagaskara/pkm_script/main/loader.user.js"
+          class="btn btn-prod"
+          target="_blank"
+          rel="noopener"
+        >
+          ▶ Install Versi PRODUKSI (Stabil)
+        </a>
+
+        <a
+          href="https://raw.githubusercontent.com/cobrabagaskara/pkm_script/dev/modular-system/loader.user.js"
+          class="btn btn-dev"
+          target="_blank"
+          rel="noopener"
+        >
+          ▶ Install Versi DEVELOPMENT (Fitur Terbaru)
+        </a>
+      </div>
+
+      <div class="footer">
+        <p>Setelah klik, browser akan membuka halaman instalasi Tampermonkey.<br>
+        Klik <strong>“Install”</strong> → selesai!</p>
+        <p>v1.0 • Dibuat untuk Tim PKM Kedawung Cirebon</p>
+      </div>
+    </div>
   </div>
-
-  <div class="card">
-    <h2>📦 Daftar JAMU Tersedia</h2>
-    <div id="modules">Memuat daftar modul...</div>
-    <p style="margin-top: 12px;">
-      <a href="" target="_blank">
-        Edit  modul
-      </a>
-    </p>
-  </div>
-  <img src="https://quickchart.io/qr?text=https%3A%2F%2Fraw.githubusercontent.com%2Fcobrabagaskara%2Fpkm_script%2Fmain%2Floader.user.js&size=250" 
-     alt="Install PKM Loader via QR" 
-     style="margin-top: 10px;">
-<p style="font-size: 0.85em;">Pindai dengan HP, lalu buka di browser desktop (jika perlu)</p>
-
-  <script>
-    fetch('https://api.github.com/repos/cobrabagaskara/pkm_script/contents/modules')
-      .then(r => r.json())
-      .then(files => {
-        const container = document.getElementById('modules');
-        if (!Array.isArray(files)) {
-          container.innerHTML = '<p style="color:red;">Gagal memuat modul.</p>';
-          return;
-        }
-        const jsFiles = files.filter(f => f.name.endsWith('.js')).map(f => f.name);
-        if (jsFiles.length === 0) {
-          container.innerHTML = '<p>Tidak ada modul tersedia.</p>';
-        } else {
-          container.innerHTML = jsFiles.map(name => `<div><code>${name}</code></div>`).join('');
-        }
-      })
-      .catch(err => {
-        document.getElementById('modules').innerHTML = '<p style="color:red;">Error: ' + err.message + '</p>';
-      });
-  </script>
 </body>
 </html>
