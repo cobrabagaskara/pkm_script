@@ -2,6 +2,6 @@
   "modules": [
     "example-hello.js",
     "epus-close-billing.js",
-    "modules/bpjs-nik-auto.js"
+    "modules/bpjs-icare-nik-auto.js"
   ]
 }
