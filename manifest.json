@@ -1,8 +1,8 @@
 {
   "modules": [
-    "bpjs-icare-nik-auto.js",
-    "epus-close-billing.js",
-    "epus-data-exporter.js",
-    "example-hello.js"
+    "modules/bpjs-icare-nik-auto.js",
+    "modules/epus-close-billing.js",
+    "modules/epus-data-exporter.js",
+    "modules/example-hello.js"
   ]
 }
