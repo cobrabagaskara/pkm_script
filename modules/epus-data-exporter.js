@@ -8,21 +8,12 @@
 (function () {
   'use strict';
 
-  const allowedHosts = [
-    'cirebon.epuskesmas.id',
-    'epuskesmas.id'
-  ];
-
+  const allowedHosts = ['cirebon.epuskesmas.id', 'epuskesmas.id'];
   if (!allowedHosts.some(host => window.location.hostname.endsWith(host))) {
     return;
   }
 
-  const allowedPaths = [
-    '/pelayanan',
-    '/pasien',
-    '/pendaftaran'
-  ];
-
+  const allowedPaths = ['/pelayanan', '/pasien', '/pendaftaran'];
   const currentPath = window.location.pathname;
   const isPathAllowed = allowedPaths.some(path => currentPath.startsWith(path));
   if (!isPathAllowed) return;
