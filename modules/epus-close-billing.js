@@ -8,11 +8,7 @@
 (function () {
   'use strict';
 
-  const allowedHosts = [
-    'cirebon.epuskesmas.id',
-    'epuskesmas.id' // ← tangkap semua subdomain
-  ];
-
+  const allowedHosts = ['cirebon.epuskesmas.id', 'epuskesmas.id'];
   if (!allowedHosts.some(host => window.location.hostname.endsWith(host))) {
     return;
   }
