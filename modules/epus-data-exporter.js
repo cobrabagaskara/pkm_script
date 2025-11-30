@@ -1,28 +1,32 @@
 // ==UserScript==
 // @name         EPUS: Gabung Data Tabel
 // @namespace    PKM
-// @version      1.1
+// @version      1.2
 // @description  Gabungkan semua data tabel (support range halaman, auto set 100/page, auto download Excel)
 // ==/UserScript==
 
 (function () {
   'use strict';
 
- // === Filter: hanya aktif di halaman tertentu di EPUS Cirebon ===
-const allowedPaths = [
-  '/pelayanan',
-  '/pasien',
-  '/pendaftaran' // ← ganti dengan path ketiga yang kamu maksud
-];
+  const allowedHosts = [
+    'cirebon.epuskesmas.id',
+    'epuskesmas.id'
+  ];
 
-const currentPath = window.location.pathname;
-const isAllowed = allowedPaths.some(path => currentPath.startsWith(path));
+  if (!allowedHosts.some(host => window.location.hostname.endsWith(host))) {
+    return;
+  }
 
-if (!isAllowed) {
-  return;
-}
+  const allowedPaths = [
+    '/pelayanan',
+    '/pasien',
+    '/pendaftaran'
+  ];
 
-  // === Pastikan XLSX dari loader tersedia ===
+  const currentPath = window.location.pathname;
+  const isPathAllowed = allowedPaths.some(path => currentPath.startsWith(path));
+  if (!isPathAllowed) return;
+
   const PKM_XLSX = window.PKM?.XLSX;
   if (!PKM_XLSX) {
     console.warn('[EPUS Data Exporter] XLSX dari loader tidak tersedia.');
@@ -42,7 +46,6 @@ if (!isAllowed) {
       headers = [...table.querySelectorAll("thead th")].map(th => th.innerText.trim());
       allData = [];
 
-      // set perPage = 100
       const perPageSelect = document.querySelector("select[name=limitPerPage]");
       if (perPageSelect) {
         perPageSelect.value = "100";
@@ -50,7 +53,6 @@ if (!isAllowed) {
         await delay(1500);
       }
 
-      // hitung total halaman
       const infoText = document.querySelector(".datatable-footer-pagination span")?.innerText || "";
       const matchTotal = infoText.match(/dari\s+(\d+)/i);
       const totalRows = matchTotal ? parseInt(matchTotal[1], 10) : null;
@@ -59,7 +61,6 @@ if (!isAllowed) {
 
       if (!toPage || toPage > totalPages) toPage = totalPages;
 
-      // progress bar
       let progressContainer = document.getElementById("gabung-progress");
       if (progressContainer) progressContainer.remove();
 
@@ -98,7 +99,6 @@ if (!isAllowed) {
 
       while (currentPage <= toPage && !canceled) {
         await delay(1200);
-
         const rows = [...document.querySelectorAll("table tbody tr")];
         rows.forEach(row => {
           const cols = [...row.querySelectorAll("td")].map(td => td.innerText.trim());
@@ -153,7 +153,6 @@ if (!isAllowed) {
 
   function downloadXLSX() {
     if (!allData.length) return alert("❌ Belum ada data. Klik 'Gabungkan' dulu.");
-
     const wsData = [headers, ...allData];
     const ws = PKM_XLSX.utils.aoa_to_sheet(wsData);
     const wb = PKM_XLSX.utils.book_new();
