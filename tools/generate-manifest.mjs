@@ -18,9 +18,10 @@ try {
     // Baca semua isi folder modules
     const files = await readdir(MODULES_DIR);
 
-    // Filter hanya file .js, urutkan alfabetis
+    // Filter hanya file .js, tambahkan prefix "modules/", urutkan alfabetis
     const jsFiles = files
         .filter(file => file.endsWith('.js'))
+        .map(file => `modules/${file}`)  // ← INI YANG DITAMBAHKAN
         .sort();
 
     // Bangun objek manifest
