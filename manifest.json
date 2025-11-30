@@ -2,7 +2,7 @@
   "modules": [
     "bpjs-icare-nik-auto.js",
     "epus-close-billing.js",
-    "epus-pelayanan-data-exporter.js",
+    "epus-data-exporter.js",
     "example-hello.js"
   ]
 }
