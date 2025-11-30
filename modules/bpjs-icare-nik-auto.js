@@ -38,7 +38,6 @@
     observer.observe(document.body, { childList: true, subtree: true });
   } else {
     if (typeof $ === 'undefined') {
-      // Jika jQuery belum siap, tunda
       const waitForjQuery = () => {
         if (typeof $ === 'function' && $.fn) {
           initTopWindow();
