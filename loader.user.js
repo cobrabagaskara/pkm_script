@@ -4,12 +4,9 @@
 // @version      1.1.3
 // @description  Loader modular untuk script PKM — dengan notifikasi update otomatis.
 // @author       Aang
-// @match        https://cirebon.epuskesmas.id/*
 // @match        https://*.epuskesmas.id/*
-// @match        https://pcarejkn.bpjs-kesehatan.go.id/*
-// @match        https://mobile-faskes.bpjs-kesehatan.go.id/*
+// @match        https://*.bpjs-kesehatan.go.id/*
 // @match        https://satusehat.kemkes.go.id/*
-// @match        https://*.domain-aplikasi-4.go.id/*
 // @grant        none
 // @require      https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js
 // @run-at       document-idle
