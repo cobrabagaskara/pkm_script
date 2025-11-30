@@ -8,10 +8,19 @@
 (function () {
   'use strict';
 
-  // === Filter: hanya aktif di halaman /pelayanan ===
-  if (!/^https:\/\/cirebon\.epuskesmas\.id\/pelayanan/.test(window.location.href)) {
-    return;
-  }
+ // === Filter: hanya aktif di halaman tertentu di EPUS Cirebon ===
+const allowedPaths = [
+  '/pelayanan',
+  '/pasien',
+  '/pendaftaran' // ← ganti dengan path ketiga yang kamu maksud
+];
+
+const currentPath = window.location.pathname;
+const isAllowed = allowedPaths.some(path => currentPath.startsWith(path));
+
+if (!isAllowed) {
+  return;
+}
 
   // === Pastikan XLSX dari loader tersedia ===
   const PKM_XLSX = window.PKM?.XLSX;
