@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BPJS NIK Auto
 // @namespace    PKM
-// @version      1.3
+// @version      1.4
 // @description  Otomatisasi NIK dengan auto-klik "Setuju" via Swal API + deteksi #pstname
 // ==/UserScript==
 
@@ -20,23 +20,52 @@
   const isInIframe = window.self !== window.top;
 
   if (isInIframe) {
+    // console.log('[BPJS NIK Auto] 🟢 Iframe aktif di:', window.location.href);
     let handled = false;
-    const observer = new MutationObserver(() => {
+
+    const tryClickAgree = () => {
       if (handled) return;
-      if (typeof window.Swal !== 'undefined' && window.Swal.isVisible()) {
-        const title = window.Swal.getTitle();
+
+      // Strategi 1: Gunakan Swal API
+      const SwalRef = window.Swal;
+      if (SwalRef && typeof SwalRef.isVisible === 'function' && SwalRef.isVisible()) {
+        const title = SwalRef.getTitle();
         if (title && title.innerHTML.includes('KERAHASIAAN INFORMASI')) {
-          window.Swal.clickConfirm();
+          SwalRef.clickConfirm();
           handled = true;
+          console.log('[BPJS NIK Auto] ✅ Swal "Setuju" diklik otomatis.');
           setTimeout(() => handled = false, 3000);
+          return;
         }
       }
-      if (document.querySelector('#pstname:visible')) {
-        window.parent.postMessage({ type: 'NIK_PROCESSED' }, '*');
+
+      // Strategi 2: Klik langsung tombol DOM
+      const confirmBtn = document.querySelector('.swal2-confirm');
+      if (confirmBtn && !confirmBtn.disabled && confirmBtn.textContent.trim() === 'Setuju') {
+        confirmBtn.click();
+        handled = true;
+        console.log('[BPJS NIK Auto] ✅ Tombol "Setuju" diklik via DOM.');
+        setTimeout(() => handled = false, 3000);
       }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    };
+
+    const observer = new MutationObserver(tryClickAgree);
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // Polling cadangan
+    let attempts = 0;
+    const poll = setInterval(() => {
+      if (attempts > 20) {
+        clearInterval(poll);
+        return;
+      }
+      tryClickAgree();
+      attempts++;
+    }, 500);
   } else {
+    // console.log('[BPJS NIK Auto] 🟢 Top window aktif di:', window.location.href);
     if (typeof $ === 'undefined') {
       const waitForjQuery = () => {
         if (typeof $ === 'function' && $.fn) {
