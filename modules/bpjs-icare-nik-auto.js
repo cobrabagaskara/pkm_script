@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BPJS NIK Auto
 // @namespace    PKM
-// @version      1.4
+// @version      1.5
 // @description  Otomatisasi NIK dengan auto-klik "Setuju" via Swal API + deteksi #pstname
 // ==/UserScript==
 
@@ -17,16 +17,25 @@
     return;
   }
 
+  // === BATAS: Panel UI hanya di halaman iCare ===
+  if (window.self === window.top) {
+    const allowedPaths = ['/eclaim/iCare'];
+    const currentPath = window.location.pathname;
+    const isPathAllowed = allowedPaths.some(path => currentPath.startsWith(path));
+    if (!isPathAllowed) {
+      return; // Jangan tampilkan panel di halaman lain
+    }
+  }
+
   const isInIframe = window.self !== window.top;
 
   if (isInIframe) {
-    // console.log('[BPJS NIK Auto] 🟢 Iframe aktif di:', window.location.href);
     let handled = false;
 
     const tryClickAgree = () => {
       if (handled) return;
 
-      // Strategi 1: Gunakan Swal API
+      // Strategi 1: Gunakan Swal API (jika tersedia)
       const SwalRef = window.Swal;
       if (SwalRef && typeof SwalRef.isVisible === 'function' && SwalRef.isVisible()) {
         const title = SwalRef.getTitle();
@@ -65,7 +74,7 @@
       attempts++;
     }, 500);
   } else {
-    // console.log('[BPJS NIK Auto] 🟢 Top window aktif di:', window.location.href);
+    // Inisialisasi UI panel
     if (typeof $ === 'undefined') {
       const waitForjQuery = () => {
         if (typeof $ === 'function' && $.fn) {
@@ -89,7 +98,7 @@
         background: #fff; border: 1px solid #ccc; padding: 10px; width: 280px;
         font-family: sans-serif; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       ">
-        <h4 style="margin:0 0 8px;">🤖 Otomatisasi NIK (V 1.4)</h4>
+        <h4 style="margin:0 0 8px;">🤖 Otomatisasi NIK (V 1.5)</h4>
         <textarea id="nikList" placeholder="Paste NIK (16 digit, satu per baris)" rows="5" style="width:100%;font-size:12px;"></textarea><br>
         <button id="startBtn" style="
           margin-top:6px; background:#007bff; color:white; border:none;
