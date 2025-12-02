@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BPJS NIK Auto
 // @namespace    PKM
-// @version      1.3
+// @version      1.5
 // @description  Otomatisasi NIK dengan auto-klik "Setuju" via Swal API + deteksi #pstname
 // ==/UserScript==
 
@@ -17,25 +17,56 @@
     return;
   }
 
+  const allowedPaths = ['/eclaim/iCare'];
+  const currentPath = window.location.pathname;
+  const isPathAllowed = allowedPaths.some(path => currentPath.startsWith(path));
+  if (!isPathAllowed) {
+    return;
+  }
+
   const isInIframe = window.self !== window.top;
 
   if (isInIframe) {
     let handled = false;
-    const observer = new MutationObserver(() => {
+
+    const tryClickAgree = () => {
       if (handled) return;
-      if (typeof window.Swal !== 'undefined' && window.Swal.isVisible()) {
-        const title = window.Swal.getTitle();
+
+      const SwalRef = window.Swal;
+      if (SwalRef && typeof SwalRef.isVisible === 'function' && SwalRef.isVisible()) {
+        const title = SwalRef.getTitle();
         if (title && title.innerHTML.includes('KERAHASIAAN INFORMASI')) {
-          window.Swal.clickConfirm();
+          SwalRef.clickConfirm();
           handled = true;
+          console.log('[BPJS NIK Auto] ✅ Swal "Setuju" diklik otomatis.');
           setTimeout(() => handled = false, 3000);
+          return;
         }
       }
-      if (document.querySelector('#pstname:visible')) {
-        window.parent.postMessage({ type: 'NIK_PROCESSED' }, '*');
+
+      const confirmBtn = document.querySelector('.swal2-confirm');
+      if (confirmBtn && !confirmBtn.disabled && confirmBtn.textContent.trim() === 'Setuju') {
+        confirmBtn.click();
+        handled = true;
+        console.log('[BPJS NIK Auto] ✅ Tombol "Setuju" diklik via DOM.');
+        setTimeout(() => handled = false, 3000);
       }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    };
+
+    const observer = new MutationObserver(tryClickAgree);
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    let attempts = 0;
+    const poll = setInterval(() => {
+      if (attempts > 20) {
+        clearInterval(poll);
+        return;
+      }
+      tryClickAgree();
+      attempts++;
+    }, 500);
   } else {
     if (typeof $ === 'undefined') {
       const waitForjQuery = () => {
@@ -50,6 +81,10 @@
       initTopWindow();
     }
   }
+
+  let nikArray = [];
+  let isProcessing = false;
+  let messageListener = null;
 
   function initTopWindow() {
     if ($('#autoNikPanel').length) return;
@@ -72,40 +107,61 @@
       </div>
     `);
 
-    let nikArray = [];
-    $('#startBtn').on('click', function () {
-      const raw = $('#nikList').val().trim();
-      if (!raw) {
-        $('#progressText').text('❌ Isi dulu NIK!');
-        return;
-      }
-      nikArray = raw.split(/\r?\n/)
-                    .map(n => n.trim())
-                    .filter(n => /^\d{16}$/.test(n));
-      if (nikArray.length === 0) {
-        $('#progressText').text('❌ NIK tidak valid');
-        return;
-      }
-      $('#progressText').text(`▶ Mulai (${nikArray.length})`);
-      processNextNik();
-    });
+    $('#startBtn').on('click', startProcessing);
+  }
 
-    function processNextNik() {
-      if (nikArray.length === 0) {
-        $('#progressText').text('✅ Selesai');
-        return;
-      }
-      const nik = nikArray.shift();
-      $('#rbkartunik').prop('checked', true).trigger('change');
-      $('#txtNokartu').val(nik);
-      $('#nikList').val(nikArray.join('\n'));
-      $('#progressText').text(`🔄 Proses: ${nik}`);
+  function startProcessing() {
+    if (isProcessing) return;
+
+    const raw = $('#nikList').val().trim();
+    if (!raw) {
+      $('#progressText').text('❌ Isi dulu NIK!');
+      return;
     }
 
-    window.addEventListener('message', (e) => {
+    nikArray = raw.split(/\r?\n/)
+                  .map(n => n.trim())
+                  .filter(n => /^\d{16}$/.test(n));
+
+    if (nikArray.length === 0) {
+      $('#progressText').text('❌ NIK tidak valid');
+      return;
+    }
+
+    isProcessing = true;
+    $('#progressText').text(`▶ Mulai (${nikArray.length})`);
+
+    // Hapus listener lama
+    if (messageListener) {
+      window.removeEventListener('message', messageListener);
+    }
+
+    // Pasang listener baru
+    messageListener = (e) => {
       if (e.data.type === 'NIK_PROCESSED') {
         setTimeout(processNextNik, 1200);
       }
-    });
+    };
+    window.addEventListener('message', messageListener);
+
+    processNextNik();
+  }
+
+  function processNextNik() {
+    if (nikArray.length === 0) {
+      $('#progressText').text('✅ Selesai');
+      isProcessing = false;
+      if (messageListener) {
+        window.removeEventListener('message', messageListener);
+        messageListener = null;
+      }
+      return;
+    }
+
+    const nik = nikArray.shift();
+    $('#rbkartunik').prop('checked', true).trigger('change');
+    $('#txtNokartu').val(nik);
+    $('#nikList').val(nikArray.join('\n'));
+    $('#progressText').text(`🔄 Proses: ${nik}`);
   }
 })();
