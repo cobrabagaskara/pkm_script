@@ -24,7 +24,19 @@ const allowedHosts = [
   if (!allowedHosts.includes(window.location.hostname)) {
     return;
   }
+ // === Tambahkan filter path agar panel UI hanya muncul di halaman tertentu ===
+  const allowedPaths = [
+    '/eclaim/iCare',
+    '/IHS/historyfaskes' // ← opsional, hapus jika tidak perlu
+  ];
 
+  const currentPath = window.location.pathname;
+  const isPathAllowed = allowedPaths.some(path => currentPath.startsWith(path));
+  if (!isPathAllowed) {
+    return;
+  }
+
+  const isInIframe = window.self !== window.top;
   const isInIframe = window.self !== window.top;
 
   if (isInIframe) {
