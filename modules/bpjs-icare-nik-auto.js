@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BPJS NIK Auto
 // @namespace    PKM
-// @version      1.6
+// @version      1.7
 // @description  Otomatisasi NIK dengan auto-klik "Setuju" di popup BPJS + deteksi #pstname
 // ==/UserScript==
 
@@ -26,25 +26,24 @@
 
   const isInIframe = window.self !== window.top;
 
-  // === Logika untuk Iframe (popup & sinyal) ===
+  // === IF- IFRAME LOGIC ===
   if (isInIframe) {
     let handled = false;
 
     const tryClickAgree = () => {
       if (handled) return;
 
-      // Strategi 1: Cari popup berdasarkan teks
+      // Cari popup berdasarkan teks
       const allModals = document.querySelectorAll('.modal');
       for (const modal of allModals) {
         const modalText = modal.innerText || '';
         if (modalText.includes('KERAHASIAAN INFORMASI')) {
-          // Cari tombol Setuju
           const buttons = modal.querySelectorAll('button, .btn');
           for (const btn of buttons) {
             if (btn.textContent.includes('Setuju') && !btn.disabled) {
               btn.click();
               handled = true;
-              console.log('[BPJS NIK Auto] ✅ Tombol Setuju diklik via teks.');
+              console.log('[BPJS NIK Auto] ✅ Tombol Setuju diklik.');
               setTimeout(() => handled = false, 3000);
               return;
             }
@@ -52,8 +51,9 @@
         }
       }
 
-      // Strategi 2: Cari elemen #pstname
-      if (document.querySelector('#pstname:visible')) {
+      // Deteksi #pstname tanpa :visible
+      const pstname = document.querySelector('#pstname');
+      if (pstname && pstname.textContent.trim() !== '') {
         window.parent.postMessage({ type: 'NIK_PROCESSED' }, '*');
       }
     };
@@ -64,10 +64,10 @@
     }
 
     setInterval(tryClickAgree, 800);
-    return; // Jangan lanjut ke UI
+    return;
   }
 
-  // === Logika untuk Top Window (UI Panel) ===
+  // === TOP WINDOW UI ===
   if (typeof $ === 'undefined') {
     const waitForjQuery = () => {
       if (typeof $ === 'function' && $.fn) {
@@ -94,11 +94,11 @@
         background: #fff; border: 1px solid #ccc; padding: 10px; width: 280px;
         font-family: sans-serif; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       ">
-        <h4 style="margin:0 0 8px;">🤖 Otomatisasi NIK (Auto Setuju)</h4>
+        <h4 style="margin:0 0 8px;">🤖 Otomatisasi NIK (V 1.7)</h4>
         <textarea id="nikList" placeholder="Paste NIK (16 digit, satu per baris)" rows="5" style="width:100%;font-size:12px;"></textarea><br>
         <button id="startBtn" style="
           margin-top:6px; background:#007bff; color:white; border:none;
-          padding:5px 10; border-radius:3px; cursor:pointer;
+          padding:5px 10px; border-radius:3px; cursor:pointer;
         ">▶ Start</button>
         <div id="progress" style="margin-top:6px;font-size:12px;">
           Status: <span id="progressText">Siap</span>
