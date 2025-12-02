@@ -1,30 +1,33 @@
 // ==UserScript==
 // @name         EPUS: Gabung Data Tabel
 // @namespace    PKM
-// @version      1.2
+// @version      1.3
 // @description  Gabungkan semua data tabel (support range halaman, auto set 100/page, auto download Excel)
 // ==/UserScript==
 
 (function () {
   'use strict';
 
-  const allowedHosts = ['cirebon.epuskesmas.id', 'epuskesmas.id'];
-  if (!allowedHosts.some(host => window.location.hostname.endsWith(host))) {
-    return;
-  }
+  // === Filter domain ===
+  if (!window.location.hostname.endsWith('epuskesmas.id')) return;
 
+  // === Filter path ===
   const allowedPaths = ['/pelayanan', '/pasien', '/pendaftaran'];
   const currentPath = window.location.pathname;
   const isPathAllowed = allowedPaths.some(path => currentPath.startsWith(path));
   if (!isPathAllowed) return;
 
+  // === Pastikan XLSX dari loader tersedia ===
   const PKM_XLSX = window.PKM?.XLSX;
   if (!PKM_XLSX) {
     console.warn('[EPUS Data Exporter] XLSX dari loader tidak tersedia.');
     return;
   }
 
+  // === Fungsi utilitas ===
   const delay = ms => new Promise(res => setTimeout(res, ms));
+
+  // === Logika utama ===
   let allData = [];
   let headers = [];
 
@@ -70,6 +73,7 @@
       const cancelBtn = document.createElement("button");
       cancelBtn.innerText = "Batalkan";
       cancelBtn.style = "margin-top:5px;padding:5px 10px;background:#dc3545;color:white;border:none;border-radius:3px;cursor:pointer;";
+
       progressContainer.appendChild(barWrapper);
       progressContainer.appendChild(cancelBtn);
       table.parentElement.insertBefore(progressContainer, table);
@@ -118,7 +122,7 @@
         alert(`⏹️ Proses dibatalkan. Data terkumpul: ${allData.length} baris.`);
       }
     } catch (err) {
-      console.error("❌ Gagal gabungkan ", err);
+      console.error("❌ Gagal gabungkan data:", err);
       alert("❌ Terjadi kesalahan. Cek console.");
     }
   }
@@ -151,41 +155,109 @@
     PKM_XLSX.writeFile(wb, "data_ckg.xlsx");
   }
 
-  function addButtons() {
-    const table = document.querySelector("table");
-    if (!table || document.getElementById("gabung-data-btn")) return;
+  // === UI PANEL DRAGGABLE ===
+  function createDraggablePanel() {
+    if ($('#epusDataPanelContainer').length) return;
 
-    const btn1 = document.createElement("button");
-    btn1.innerText = "Gabungkan Semua Data (Range)";
-    btn1.id = "gabung-data-btn";
-    btn1.style = "margin:10px;padding:8px;background:#28a745;color:white;border:none;cursor:pointer;";
-    btn1.onclick = () => {
+    const container = $(`
+      <div id="epusDataPanelContainer" style="
+        position: fixed; top: 20px; right: 20px; z-index: 9999999;
+        background: #fff; border: 1px solid #ccc; padding: 12px; width: 280px;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15); border-radius: 6px; cursor: move;
+      ">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
+          <h4 style="margin:0; font-size:15px; color:#333;">📊 EPUS: Ekspor Data</h4>
+          <span id="closePanelBtn" style="
+            cursor: pointer; font-weight: bold; color: #666;
+            width: 22px; height: 22px; display: flex; align-items: center;
+            justify-content: center; border-radius: 50%; background: #f0f0f0;
+            font-size:14px;
+          ">✕</span>
+        </div>
+        <button id="gabungBtn" style="
+          width:100%; padding:8px; background:#28a745; color:white; border:none;
+          border-radius:4px; cursor:pointer; margin-bottom:8px;
+        ">Gabungkan Semua Data (Range)</button>
+        <button id="csvBtn" style="
+          width:100%; padding:8px; background:#17a2b8; color:white; border:none;
+          border-radius:4px; cursor:pointer; margin-bottom:6px;
+        ">Unduh CSV (Manual)</button>
+        <button id="excelBtn" style="
+          width:100%; padding:8px; background:#007bff; color:white; border:none;
+          border-radius:4px; cursor:pointer;
+        ">Unduh Excel (Manual)</button>
+      </div>
+    `);
+
+    // Draggable logic
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    container.on('mousedown', (e) => {
+      if (e.target.closest('#closePanelBtn')) return;
+      isDragging = true;
+      offsetX = e.pageX - container.offset().left;
+      offsetY = e.pageY - container.offset().top;
+      container.css('cursor', 'grabbing');
+    });
+
+    $(document).on('mousemove', (e) => {
+      if (!isDragging) return;
+      const x = e.pageX - offsetX;
+      const y = e.pageY - offsetY;
+      container.css({ left: x, top: y, right: 'auto' });
+    });
+
+    $(document).on('mouseup', () => {
+      isDragging = false;
+      container.css('cursor', 'move');
+    });
+
+    // Tombol aksi
+    container.find('#gabungBtn').on('click', () => {
       const fromPage = parseInt(prompt("Dari halaman ke berapa?", "1"), 10);
       const toPage = parseInt(prompt("Sampai halaman ke berapa? (kosong = terakhir)", ""), 10);
       collectAllPages(fromPage || 1, toPage || null);
-    };
+    });
 
-    const btn2 = document.createElement("button");
-    btn2.innerText = "Unduh CSV (Manual)";
-    btn2.id = "unduh-csv-btn";
-    btn2.style = "margin:10px;padding:8px;background:#17a2b8;color:white;border:none;cursor:pointer;";
-    btn2.onclick = downloadCSV;
+    container.find('#csvBtn').on('click', downloadCSV);
+    container.find('#excelBtn').on('click', downloadXLSX);
 
-    const btn3 = document.createElement("button");
-    btn3.innerText = "Unduh Excel (Manual)";
-    btn3.id = "unduh-excel-btn";
-    btn3.style = "margin:10px;padding:8px;background:#007bff;color:white;border:none;cursor:pointer;";
-    btn3.onclick = downloadXLSX;
+    // Tutup panel
+    container.find('#closePanelBtn').on('click', () => {
+      container.remove();
+      createReopenButton();
+    });
 
-    const container = table.parentElement;
-    container.insertBefore(btn1, table);
-    container.insertBefore(btn2, btn1.nextSibling);
-    container.insertBefore(btn3, btn2.nextSibling);
+    $('body').append(container);
   }
 
+  // === Tombol sembunyi untuk buka lagi ===
+  function createReopenButton() {
+    if ($('#reopenEpusPanel').length) return;
+
+    const btn = $(`
+      <button id="reopenEpusPanel" style="
+        position: fixed; bottom: 20px; right: 20px; z-index: 9999998;
+        background: #28a745; color: white; border: none; border-radius: 20px;
+        width: 40px; height: 40px; font-size: 18px; cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      ">📊</button>
+    `);
+
+    btn.on('click', () => {
+      btn.remove();
+      createDraggablePanel();
+    });
+
+    $('body').append(btn);
+  }
+
+  // === Auto-inject panel saat tabel muncul ===
   const observer = new MutationObserver(() => {
-    if (document.querySelector("table") && !document.getElementById("gabung-data-btn")) {
-      addButtons();
+    if (document.querySelector("table") && !$('#epusDataPanelContainer').length && !$('#reopenEpusPanel').length) {
+      createDraggablePanel();
     }
   });
 
