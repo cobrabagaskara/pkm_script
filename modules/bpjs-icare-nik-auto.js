@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BPJS NIK Auto
 // @namespace    PKM
-// @version      1.7
-// @description  Otomatisasi NIK dengan auto-klik "Setuju" di popup BPJS + deteksi #pstname
+// @version      1.4
+// @description  Otomatisasi NIK dengan auto-klik "Setuju" via Swal API + deteksi #pstname
 // ==/UserScript==
 
 (function () {
@@ -17,44 +17,35 @@
     return;
   }
 
-  const allowedPaths = ['/eclaim/iCare'];
-  const currentPath = window.location.pathname;
-  const isPathAllowed = allowedPaths.some(path => currentPath.startsWith(path));
-  if (!isPathAllowed && window.self === window.top) {
-    return;
-  }
-
   const isInIframe = window.self !== window.top;
 
-  // === IF- IFRAME LOGIC ===
   if (isInIframe) {
+    // console.log('[BPJS NIK Auto] 🟢 Iframe aktif di:', window.location.href);
     let handled = false;
 
     const tryClickAgree = () => {
       if (handled) return;
 
-      // Cari popup berdasarkan teks
-      const allModals = document.querySelectorAll('.modal');
-      for (const modal of allModals) {
-        const modalText = modal.innerText || '';
-        if (modalText.includes('KERAHASIAAN INFORMASI')) {
-          const buttons = modal.querySelectorAll('button, .btn');
-          for (const btn of buttons) {
-            if (btn.textContent.includes('Setuju') && !btn.disabled) {
-              btn.click();
-              handled = true;
-              console.log('[BPJS NIK Auto] ✅ Tombol Setuju diklik.');
-              setTimeout(() => handled = false, 3000);
-              return;
-            }
-          }
+      // Strategi 1: Gunakan Swal API
+      const SwalRef = window.Swal;
+      if (SwalRef && typeof SwalRef.isVisible === 'function' && SwalRef.isVisible()) {
+        const title = SwalRef.getTitle();
+        if (title && title.innerHTML.includes('KERAHASIAAN INFORMASI')) {
+          SwalRef.clickConfirm();
+          handled = true;
+          console.log('[BPJS NIK Auto] ✅ Swal "Setuju" diklik otomatis.');
+          setTimeout(() => handled = false, 3000);
+          return;
         }
       }
 
-      // Deteksi #pstname tanpa :visible
-      const pstname = document.querySelector('#pstname');
-      if (pstname && pstname.textContent.trim() !== '') {
-        window.parent.postMessage({ type: 'NIK_PROCESSED' }, '*');
+      // Strategi 2: Klik langsung tombol DOM
+      const confirmBtn = document.querySelector('.swal2-confirm');
+      if (confirmBtn && !confirmBtn.disabled && confirmBtn.textContent.trim() === 'Setuju') {
+        confirmBtn.click();
+        handled = true;
+        console.log('[BPJS NIK Auto] ✅ Tombol "Setuju" diklik via DOM.');
+        setTimeout(() => handled = false, 3000);
       }
     };
 
@@ -63,27 +54,31 @@
       observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    setInterval(tryClickAgree, 800);
-    return;
-  }
-
-  // === TOP WINDOW UI ===
-  if (typeof $ === 'undefined') {
-    const waitForjQuery = () => {
-      if (typeof $ === 'function' && $.fn) {
-        initTopWindow();
-      } else {
-        setTimeout(waitForjQuery, 100);
+    // Polling cadangan
+    let attempts = 0;
+    const poll = setInterval(() => {
+      if (attempts > 20) {
+        clearInterval(poll);
+        return;
       }
-    };
-    waitForjQuery();
+      tryClickAgree();
+      attempts++;
+    }, 500);
   } else {
-    initTopWindow();
+    // console.log('[BPJS NIK Auto] 🟢 Top window aktif di:', window.location.href);
+    if (typeof $ === 'undefined') {
+      const waitForjQuery = () => {
+        if (typeof $ === 'function' && $.fn) {
+          initTopWindow();
+        } else {
+          setTimeout(waitForjQuery, 100);
+        }
+      };
+      waitForjQuery();
+    } else {
+      initTopWindow();
+    }
   }
-
-  let nikArray = [];
-  let isProcessing = false;
-  let messageListener = null;
 
   function initTopWindow() {
     if ($('#autoNikPanel').length) return;
@@ -94,7 +89,7 @@
         background: #fff; border: 1px solid #ccc; padding: 10px; width: 280px;
         font-family: sans-serif; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       ">
-        <h4 style="margin:0 0 8px;">🤖 Otomatisasi NIK (V 1.7)</h4>
+        <h4 style="margin:0 0 8px;">🤖 Otomatisasi NIK (V 1.4)</h4>
         <textarea id="nikList" placeholder="Paste NIK (16 digit, satu per baris)" rows="5" style="width:100%;font-size:12px;"></textarea><br>
         <button id="startBtn" style="
           margin-top:6px; background:#007bff; color:white; border:none;
@@ -106,59 +101,40 @@
       </div>
     `);
 
-    $('#startBtn').on('click', startProcessing);
-  }
+    let nikArray = [];
+    $('#startBtn').on('click', function () {
+      const raw = $('#nikList').val().trim();
+      if (!raw) {
+        $('#progressText').text('❌ Isi dulu NIK!');
+        return;
+      }
+      nikArray = raw.split(/\r?\n/)
+                    .map(n => n.trim())
+                    .filter(n => /^\d{16}$/.test(n));
+      if (nikArray.length === 0) {
+        $('#progressText').text('❌ NIK tidak valid');
+        return;
+      }
+      $('#progressText').text(`▶ Mulai (${nikArray.length})`);
+      processNextNik();
+    });
 
-  function startProcessing() {
-    if (isProcessing) return;
-
-    const raw = $('#nikList').val().trim();
-    if (!raw) {
-      $('#progressText').text('❌ Isi dulu NIK!');
-      return;
+    function processNextNik() {
+      if (nikArray.length === 0) {
+        $('#progressText').text('✅ Selesai');
+        return;
+      }
+      const nik = nikArray.shift();
+      $('#rbkartunik').prop('checked', true).trigger('change');
+      $('#txtNokartu').val(nik);
+      $('#nikList').val(nikArray.join('\n'));
+      $('#progressText').text(`🔄 Proses: ${nik}`);
     }
 
-    nikArray = raw.split(/\r?\n/)
-                  .map(n => n.trim())
-                  .filter(n => /^\d{16}$/.test(n));
-
-    if (nikArray.length === 0) {
-      $('#progressText').text('❌ NIK tidak valid');
-      return;
-    }
-
-    isProcessing = true;
-    $('#progressText').text(`▶ Mulai (${nikArray.length})`);
-
-    if (messageListener) {
-      window.removeEventListener('message', messageListener);
-    }
-
-    messageListener = (e) => {
+    window.addEventListener('message', (e) => {
       if (e.data.type === 'NIK_PROCESSED') {
         setTimeout(processNextNik, 1200);
       }
-    };
-    window.addEventListener('message', messageListener);
-
-    processNextNik();
-  }
-
-  function processNextNik() {
-    if (nikArray.length === 0) {
-      $('#progressText').text('✅ Selesai');
-      isProcessing = false;
-      if (messageListener) {
-        window.removeEventListener('message', messageListener);
-        messageListener = null;
-      }
-      return;
-    }
-
-    const nik = nikArray.shift();
-    $('#rbkartunik').prop('checked', true).trigger('change');
-    $('#txtNokartu').val(nik);
-    $('#nikList').val(nikArray.join('\n'));
-    $('#progressText').text(`🔄 Proses: ${nik}`);
+    });
   }
 })();
