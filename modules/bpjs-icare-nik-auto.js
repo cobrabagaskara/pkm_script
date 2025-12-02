@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BPJS NIK Auto
 // @namespace    PKM
-// @version      1.4
+// @version      1.3
 // @description  Otomatisasi NIK dengan auto-klik "Setuju" via Swal API + deteksi #pstname
 // ==/UserScript==
 
@@ -17,66 +17,26 @@
     return;
   }
 
-  // === Tambahkan filter path agar panel UI hanya muncul di halaman tertentu ===
-  const allowedPaths = [
-    '/eclaim/iCare',
-    '/IHS/historyfaskes' // ← opsional, hapus jika tidak perlu
-  ];
-
-  const currentPath = window.location.pathname;
-  const isPathAllowed = allowedPaths.some(path => currentPath.startsWith(path));
-  if (!isPathAllowed) {
-    return;
-  }
-
   const isInIframe = window.self !== window.top;
 
   if (isInIframe) {
     let handled = false;
-
-    const tryClickAgree = () => {
+    const observer = new MutationObserver(() => {
       if (handled) return;
-
-      // Strategi 1: Gunakan Swal API
-      const SwalRef = window.Swal;
-      if (SwalRef && typeof SwalRef.isVisible === 'function' && SwalRef.isVisible()) {
-        const title = SwalRef.getTitle();
+      if (typeof window.Swal !== 'undefined' && window.Swal.isVisible()) {
+        const title = window.Swal.getTitle();
         if (title && title.innerHTML.includes('KERAHASIAAN INFORMASI')) {
-          SwalRef.clickConfirm();
+          window.Swal.clickConfirm();
           handled = true;
-          console.log('[BPJS NIK Auto] ✅ Swal "Setuju" diklik otomatis.');
           setTimeout(() => handled = false, 3000);
-          return;
         }
       }
-
-      // Strategi 2: Klik langsung tombol DOM
-      const confirmBtn = document.querySelector('.swal2-confirm');
-      if (confirmBtn && !confirmBtn.disabled && confirmBtn.textContent.trim() === 'Setuju') {
-        confirmBtn.click();
-        handled = true;
-        console.log('[BPJS NIK Auto] ✅ Tombol "Setuju" diklik via DOM.');
-        setTimeout(() => handled = false, 3000);
+      if (document.querySelector('#pstname:visible')) {
+        window.parent.postMessage({ type: 'NIK_PROCESSED' }, '*');
       }
-    };
-
-    const observer = new MutationObserver(tryClickAgree);
-    if (document.body) {
-      observer.observe(document.body, { childList: true, subtree: true });
-    }
-
-    // Polling cadangan
-    let attempts = 0;
-    const poll = setInterval(() => {
-      if (attempts > 20) {
-        clearInterval(poll);
-        return;
-      }
-      tryClickAgree();
-      attempts++;
-    }, 500);
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   } else {
-    // Hanya tampilkan panel UI di halaman yang diizinkan
     if (typeof $ === 'undefined') {
       const waitForjQuery = () => {
         if (typeof $ === 'function' && $.fn) {
