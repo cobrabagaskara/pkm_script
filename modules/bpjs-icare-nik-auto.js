@@ -26,8 +26,8 @@ const allowedHosts = [
   }
  // === Tambahkan filter path agar panel UI hanya muncul di halaman tertentu ===
   const allowedPaths = [
-    '/eclaim/iCare'
-    
+    '/eclaim/iCare',
+    '/IHS/historyfaskes' // ← opsional, hapus jika tidak perlu
   ];
 
   const currentPath = window.location.pathname;
