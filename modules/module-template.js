@@ -10,7 +10,7 @@
 
   // === 1. Filter Domain (wajib) ===
   const allowedHosts = [
-    'google.com'
+    'epuskesmas.id'
     // Contoh:
     // 'cirebon.epuskesmas.id',
     // 'pcarejkn.bpjs-kesehatan.go.id'
