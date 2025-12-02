@@ -16,6 +16,14 @@
   if (!allowedHosts.includes(window.location.hostname)) {
     return;
   }
+const allowedHosts = [
+    'pcarejkn.bpjs-kesehatan.go.id',
+    'mobile-faskes.bpjs-kesehatan.go.id'
+  ];
+
+  if (!allowedHosts.includes(window.location.hostname)) {
+    return;
+  }
 
   const isInIframe = window.self !== window.top;
 
