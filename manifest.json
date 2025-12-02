@@ -3,6 +3,7 @@
     "modules/bpjs-icare-nik-auto.js",
     "modules/epus-close-billing.js",
     "modules/epus-data-exporter.js",
+    "modules/bpjs-user-info.js",
     "modules/example-hello.js"
   ]
 }
