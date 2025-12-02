@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BPJS NIK Auto
 // @namespace    PKM
-// @version      1.5
-// @description  Otomatisasi NIK dengan auto-klik "Setuju" via Swal API + deteksi #pstname
+// @version      1.6
+// @description  Otomatisasi NIK dengan auto-klik "Setuju" di popup BPJS + deteksi #pstname
 // ==/UserScript==
 
 (function () {
@@ -20,36 +20,41 @@
   const allowedPaths = ['/eclaim/iCare'];
   const currentPath = window.location.pathname;
   const isPathAllowed = allowedPaths.some(path => currentPath.startsWith(path));
-  if (!isPathAllowed) {
+  if (!isPathAllowed && window.self === window.top) {
     return;
   }
 
   const isInIframe = window.self !== window.top;
 
+  // === Logika untuk Iframe (popup & sinyal) ===
   if (isInIframe) {
     let handled = false;
 
     const tryClickAgree = () => {
       if (handled) return;
 
-      const SwalRef = window.Swal;
-      if (SwalRef && typeof SwalRef.isVisible === 'function' && SwalRef.isVisible()) {
-        const title = SwalRef.getTitle();
-        if (title && title.innerHTML.includes('KERAHASIAAN INFORMASI')) {
-          SwalRef.clickConfirm();
-          handled = true;
-          console.log('[BPJS NIK Auto] ✅ Swal "Setuju" diklik otomatis.');
-          setTimeout(() => handled = false, 3000);
-          return;
+      // Strategi 1: Cari popup berdasarkan teks
+      const allModals = document.querySelectorAll('.modal');
+      for (const modal of allModals) {
+        const modalText = modal.innerText || '';
+        if (modalText.includes('KERAHASIAAN INFORMASI')) {
+          // Cari tombol Setuju
+          const buttons = modal.querySelectorAll('button, .btn');
+          for (const btn of buttons) {
+            if (btn.textContent.includes('Setuju') && !btn.disabled) {
+              btn.click();
+              handled = true;
+              console.log('[BPJS NIK Auto] ✅ Tombol Setuju diklik via teks.');
+              setTimeout(() => handled = false, 3000);
+              return;
+            }
+          }
         }
       }
 
-      const confirmBtn = document.querySelector('.swal2-confirm');
-      if (confirmBtn && !confirmBtn.disabled && confirmBtn.textContent.trim() === 'Setuju') {
-        confirmBtn.click();
-        handled = true;
-        console.log('[BPJS NIK Auto] ✅ Tombol "Setuju" diklik via DOM.');
-        setTimeout(() => handled = false, 3000);
+      // Strategi 2: Cari elemen #pstname
+      if (document.querySelector('#pstname:visible')) {
+        window.parent.postMessage({ type: 'NIK_PROCESSED' }, '*');
       }
     };
 
@@ -58,28 +63,22 @@
       observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    let attempts = 0;
-    const poll = setInterval(() => {
-      if (attempts > 20) {
-        clearInterval(poll);
-        return;
+    setInterval(tryClickAgree, 800);
+    return; // Jangan lanjut ke UI
+  }
+
+  // === Logika untuk Top Window (UI Panel) ===
+  if (typeof $ === 'undefined') {
+    const waitForjQuery = () => {
+      if (typeof $ === 'function' && $.fn) {
+        initTopWindow();
+      } else {
+        setTimeout(waitForjQuery, 100);
       }
-      tryClickAgree();
-      attempts++;
-    }, 500);
+    };
+    waitForjQuery();
   } else {
-    if (typeof $ === 'undefined') {
-      const waitForjQuery = () => {
-        if (typeof $ === 'function' && $.fn) {
-          initTopWindow();
-        } else {
-          setTimeout(waitForjQuery, 100);
-        }
-      };
-      waitForjQuery();
-    } else {
-      initTopWindow();
-    }
+    initTopWindow();
   }
 
   let nikArray = [];
@@ -99,7 +98,7 @@
         <textarea id="nikList" placeholder="Paste NIK (16 digit, satu per baris)" rows="5" style="width:100%;font-size:12px;"></textarea><br>
         <button id="startBtn" style="
           margin-top:6px; background:#007bff; color:white; border:none;
-          padding:5px 10px; border-radius:3px; cursor:pointer;
+          padding:5px 10; border-radius:3px; cursor:pointer;
         ">▶ Start</button>
         <div id="progress" style="margin-top:6px;font-size:12px;">
           Status: <span id="progressText">Siap</span>
@@ -131,12 +130,10 @@
     isProcessing = true;
     $('#progressText').text(`▶ Mulai (${nikArray.length})`);
 
-    // Hapus listener lama
     if (messageListener) {
       window.removeEventListener('message', messageListener);
     }
 
-    // Pasang listener baru
     messageListener = (e) => {
       if (e.data.type === 'NIK_PROCESSED') {
         setTimeout(processNextNik, 1200);
