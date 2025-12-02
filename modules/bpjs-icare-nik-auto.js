@@ -16,15 +16,8 @@
   if (!allowedHosts.includes(window.location.hostname)) {
     return;
   }
-const allowedHosts = [
-    'pcarejkn.bpjs-kesehatan.go.id',
-    'mobile-faskes.bpjs-kesehatan.go.id'
-  ];
 
-  if (!allowedHosts.includes(window.location.hostname)) {
-    return;
-  }
- // === Tambahkan filter path agar panel UI hanya muncul di halaman tertentu ===
+  // === Tambahkan filter path agar panel UI hanya muncul di halaman tertentu ===
   const allowedPaths = [
     '/eclaim/iCare',
     '/IHS/historyfaskes' // ← opsional, hapus jika tidak perlu
@@ -37,10 +30,8 @@ const allowedHosts = [
   }
 
   const isInIframe = window.self !== window.top;
-  const isInIframe = window.self !== window.top;
 
   if (isInIframe) {
-    // console.log('[BPJS NIK Auto] 🟢 Iframe aktif di:', window.location.href);
     let handled = false;
 
     const tryClickAgree = () => {
@@ -85,7 +76,7 @@ const allowedHosts = [
       attempts++;
     }, 500);
   } else {
-    // console.log('[BPJS NIK Auto] 🟢 Top window aktif di:', window.location.href);
+    // Hanya tampilkan panel UI di halaman yang diizinkan
     if (typeof $ === 'undefined') {
       const waitForjQuery = () => {
         if (typeof $ === 'function' && $.fn) {
